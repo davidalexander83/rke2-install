@@ -1,0 +1,47 @@
+---
+# First, create a working directory for any artefacts we may need to use.
+
+- name: Create working directory
+  ansible.builtin.file:
+    path: /opt/ansible_rke2_install
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Set work_dir variable for ease of use
+  ansible.builtin.set_fact:
+    work_dir: /opt/ansible_rke2_install
+
+# This allows us to utilise a shorter variable name for proxy variables where required,
+# while maintaining a logical structure for the variable definition in the execution playbook.
+
+- name: Set proxy variables if a proxy is required
+  when: proxy_required | bool
+  block:
+    - name: Set http_proxy
+      ansible.builtin.set_fact:
+        http_proxy: "{{ proxy_http_proxy }}"
+    - name: Set https_proxy
+      ansible.builtin.set_fact:
+        https_proxy: "{{ proxy_https_proxy }}"
+    - name: Set no_proxy
+      ansible.builtin.set_fact:
+        no_proxy: "{{ proxy_no_proxy }}"
+
+# Red Hat distributions utilise /usr/lib/systemd/system/ for systemd variable injection; Debian
+# distributions such as Ubuntu utilise /usr/local/lib/systemd/system/. The systemd_folder variable
+# accounts for this and ensures that the correct location is used for injecting variables into the
+# RKE2 service. Similarly, Red Hat prefers /usr/bin for binaries, while Debian prefers /usr/local/bin.
+
+- name: Set systemd folder for variable injection based on OS family
+  ansible.builtin.set_fact:
+    systemd_folder: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/lib/systemd/system', '/usr/local/lib/systemd/system') }}"
+
+- name: Set binary directory based on OS family
+  ansible.builtin.set_fact:
+    bin_dir: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/bin', '/usr/local/bin') }}"
+
+- name: Complete airgapped prerequisites (if required)
+  when: airgapped | bool
+  ansible.builtin.include_tasks: airgapped/00a_prerequisites_airgapped.yml

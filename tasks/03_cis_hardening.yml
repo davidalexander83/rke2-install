@@ -1,0 +1,35 @@
+---
+- name: Create etcd group
+  ansible.builtin.group:
+    name: etcd
+    state: present
+
+- name: Create etcd user for CIS hardening requirements
+  ansible.builtin.user:
+    name: etcd
+    shell: /bin/nologin
+    group: etcd
+    comment: etcd User for CIS hardening requirements
+    state: present
+
+- name: Set required sysctls for CIS hardening requirements
+  ansible.builtin.copy:
+    src: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/share/rke2/rke2-cis-sysctl.conf', '/usr/local/share/rke2/rke2-cis-sysctl.conf') }}"
+    dest: /etc/sysctl.d/60-rke2-cis.conf
+    owner: root
+    group: root
+    mode: "0600"
+    remote_src: true
+    backup: true
+  notify: Restart systemd-sysctl
+
+- name: Set CIS profile on RKE2 installation
+  ansible.builtin.copy:
+    content: 'profile: "cis"'
+    dest: /etc/rancher/rke2/config.yaml.d/cis_profile.yaml
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

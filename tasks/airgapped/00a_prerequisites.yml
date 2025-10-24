@@ -1,0 +1,28 @@
+---
+# Connected installations will simply download the latest RKE2 installation script from the internet.
+# If this is an airgapped installation, you will need to obtain the latest copy of the RKE2
+# install.sh shell script from https://get.rke2.io. This script should be placed in your working
+# directory as install.sh. If this is an airgapped install, we will check here to make sure it's there,
+# and fail if not.
+
+- name: Check that install.sh is present (airgapped only)
+  when: airgapped | bool
+  block:
+    - name: Stat for install.sh
+      ansible.builtin.stat:
+        path: "{{ work_dir }}/install.sh"
+      register: install_sh_stat
+
+    - name: Fail if install.sh is not present
+      when: not install_sh_stat['stat']['exists']
+      ansible.builtin.fail:
+        msg: "install.sh cannot be found in {{ work_dir }}. Please check the file exists in this location."
+
+    - name: Ensure that install.sh is executable
+      ansible.builtin.file:
+        path: "{{ work_dir }}/install.sh"
+        state: file
+        owner: root
+        group: root
+        mode: "0700"
+

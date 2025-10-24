@@ -1,0 +1,49 @@
+---
+#
+
+- name: Download latest installation script
+  ansible.builtin.get_url:
+    url: https://get.rke2.io
+    dest: "{{ work_dir }}/install.sh"
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Run RKE2 installation script
+  ansible.builtin.command:
+    cmd: "{{ work_dir }}/install.sh"
+  environment:
+    INSTALL_RKE2_CHANNEL: "{{ rke2_cluster_channel | default('stable') }}"
+    INSTALL_RKE2_TYPE: "{{ inventory_hostname['rke2_node_type'] }}"
+    INSTALL_RKE2_VERSION: "{{ rke2_cluster_version }}"
+  changed_when: true
+
+- name: Create custom manifests for implementation (if required)
+  when: rke2_cluster_custom_manifests_required | bool
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ rke2_data_path }}/server/manifests/"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ rke2_cluster_custom_manifests }}"
+
+- name: Create static pod manifests for implementation (if required)
+  when: rke_cluster_custom_static_pods_required | bool
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ rke2_data_path }}/agent/pod-manifests/"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ rke2_cluster_custom_static_pods }}"
+
+- name: Create RKE2 environment file
+  when: rke2_cluster_environment_options_required | bool
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/etc/default/rke2-{{ rke2_node_type }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ rke2_environment_options }}"

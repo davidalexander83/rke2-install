@@ -1,0 +1,32 @@
+---
+# TODO
+
+# 00_prerequisites
+
+# Connected
+
+# 01_configure_local_ha
+
+# 02_download_and_install_rke2
+
+# 03_cis_hardening
+
+# 04_configure_any_additional_required_confs
+
+# 05_setup_first_server_node
+
+# 06_setup_additional_server_nodes
+
+# 07_completion_summary
+
+# airgapped
+
+# 00_prerequisites
+
+# 01_configure_local_ha
+
+# airgapped/02a_download_and_install_rke2_airgapped
+
+# 03_cis_hardening
+
+# 
