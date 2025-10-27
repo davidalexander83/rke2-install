@@ -46,4 +46,4 @@
     owner: root
     group: root
     mode: "0644"
-  loop: "{{ rke2_environment_options }}"
+  loop: "{{ rke2_cluster_environment_options }}"

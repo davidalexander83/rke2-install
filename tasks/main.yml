@@ -1,27 +1,30 @@
 ---
-# TODO
-
-# 00_prerequisites
-
 # Connected
+
+- name: 00_prerequisites
+  ansible.builtin.include_tasks: 00_prerequisites.yml
 
 # 01_configure_local_ha
 
-# 02_download_and_install_rke2
+- name: 02_download_and_install_rke2
+  ansible.builtin.include_tasks: 02_download_and_install_rke2.yml
 
-# 03_cis_hardening
+- name: 03_cis_hardening
+  ansible.builtin.include_tasks: 03_cis_hardening.yml
 
 # 04_configure_any_additional_required_confs
 
-# 05_setup_first_server_node
+- name: 05_setup_first_server_node
+  ansible.builtin.include_tasks: 05_setup_first_server_node.yml
 
 # 06_setup_additional_server_nodes
 
 # 07_completion_summary
 
-# airgapped
 
-# 00_prerequisites
+# Airgapped
+
+# 00_prerequisites (includes airgapped/00a_prerequisites_airgapped.yml)
 
 # 01_configure_local_ha
 
