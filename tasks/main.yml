@@ -4,7 +4,8 @@
 - name: 00 - Prerequisite check
   ansible.builtin.include_tasks: 00_prerequisites.yml
 
-# 01_configure_local_ha
+- name: 01 - Configure local HA availability
+  ansible.builtin.include_tasks: 01_configure_local_ha.yml
 
 - name: 02 - Download and install RKE2 setup files
   ansible.builtin.include_tasks: 02_download_and_install_rke2.yml

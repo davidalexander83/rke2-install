@@ -1,5 +1,10 @@
 ---
+# This task set downloads the latest RKE2 installer for use with the cluster. It uses the
+# defined working directory to store the script, and generates any additional required
+# manifests for various advanced configuration (static pods, custom manifests etc.).
 #
+# The task set finishes with a server node ready to install RKE2 as either a server or
+# an agent, optionally after applying any required CIS hardening.
 
 - name: Download latest installation script
   ansible.builtin.get_url:

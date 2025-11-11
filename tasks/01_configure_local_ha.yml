@@ -1,0 +1,6 @@
+---
+# This task set configures local keepalived on each server node to create a three node
+# keepalived cluster for ensuring registration is configured to be available from all nodes.
+#
+# The task set finishes by waiting for the first server node to be ready, and symlinking
+# the kubeconfig and kubectl files to /root and a bin path for ease of management.
