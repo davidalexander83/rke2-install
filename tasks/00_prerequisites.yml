@@ -38,9 +38,16 @@
   ansible.builtin.set_fact:
     systemd_folder: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/lib/systemd/system', '/usr/local/lib/systemd/system') }}"
 
-- name: Set binary directory based on OS family
+- name: Set binary folder based on OS family
   ansible.builtin.set_fact:
     bin_dir: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/bin', '/usr/local/bin') }}"
+
+# When using keepalived, the script required for keepalive actions is stored in different
+# locations in Debian and Red Hat distributions.
+
+- name: Set script for folder for keepalived based on OS family
+  ansible.builtin.set_fact:
+    keepalived_script_dir: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/libexec/keepalived', '/etc/keepalived') }}"
 
 - name: Complete airgapped prerequisites (if required)
   when: airgapped | bool

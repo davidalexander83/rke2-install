@@ -2,5 +2,60 @@
 # This task set configures local keepalived on each server node to create a three node
 # keepalived cluster for ensuring registration is configured to be available from all nodes.
 #
-# The task set finishes by waiting for the first server node to be ready, and symlinking
-# the kubeconfig and kubectl files to /root and a bin path for ease of management.
+# The task set finishes with the local cluster nodes publishing a virtual IP for registration
+# to be consumed by the cluster when installing RKE2.
+
+- name: Install keepalived package
+  ansible.builtin.package:
+    name: keepalived
+
+- name: Create directory for keepalived
+  ansible.builtin.file:
+    path: /etc/keepalived
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create directory for keepalived scripts in Red Hat OS
+  when: ansible_facts['os_family'] == 'RedHat'
+  ansible.builtin.file:
+    path: /usr/libexec/keepalived
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create Kubernetes API health check script for keepalived
+  ansible.builtin.template:
+    src: templates/check_apiserver.sh.j2
+    dest: "{{ keepalived_script_dir }}/check_apiserver.sh"
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart keepalived
+
+- name: Create RKE2 Server health check script for keepalived
+  ansible.builtin.template:
+    src: templates/check_rke2server.sh.j2
+    dest: "{{ keepalived_script_dir }}/check_rke2server.sh"
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart keepalived
+
+- name: Create keepalived config file
+  ansible.builtin.template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart keepalived
+
+- name: Enable keepalived and make sure it is not masked
+  ansible.builtin.systemd:
+    name: keepalived
+    enabled: true
+    masked: false
+  notify: Restart keepalived
