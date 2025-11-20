@@ -13,6 +13,27 @@
   ansible.builtin.set_fact:
     work_dir: /opt/ansible_rke2_install
 
+# We will update the /etc/hosts file on each node to ensure connectivity if DNS is not present.
+
+- name: Update /etc/hosts with all node names and IP addresses
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    insertaafter: EOF
+    line: "{{ hostvars[item]['ansible_facts']['default_ipv4']['address'] }} {{ hostvars[item]['ansible_facts']['fqdn'] }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: group[ansible_play_hosts_all]
+
+- name: Update /etc/hosts with the registration address
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    insertaafter: EOF
+    line: "{{ rke2_api_ip }} {{ rke2_api_fqdn }}"
+    owner: root
+    group: root
+    mode: '0644'
+
 # This allows us to utilise a shorter variable name for proxy variables where required,
 # while maintaining a logical structure for the variable definition in the execution playbook.
 
@@ -48,6 +69,31 @@
 - name: Set script for folder for keepalived based on OS family
   ansible.builtin.set_fact:
     keepalived_script_dir: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/libexec/keepalived', '/etc/keepalived') }}"
+
+- name: Install Helm
+  block:
+    - name: Download latest version string file
+      ansible.builtin.get_url:
+        url: https://get.helm.sh/helm4-latest-version
+        dest: /tmp/helm-version.txt
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Set version for Helm download
+      ansible.builtin.set_fact:
+        helm_version: "{{ lookup('ansible.builtin.file', '/tmp/helm-version.txt') }}"
+    - name: Remove version file as it is no longer needed
+      ansible.builtin.file:
+        path: /tmp/helm-version.txt
+        state: absent
+    - name: Download latest Helm release tarball and unpack
+      ansible.builtin.unarchive:
+        src: "https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz"
+        dest: "{{ bin_dir }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0755'
 
 - name: Complete airgapped prerequisites (if required)
   when: airgapped | bool
