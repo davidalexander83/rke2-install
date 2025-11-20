@@ -18,7 +18,7 @@
 - name: Update /etc/hosts with all node names and IP addresses
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    insertaafter: EOF
+    insertafter: EOF
     line: "{{ hostvars[item]['ansible_facts']['default_ipv4']['address'] }} {{ hostvars[item]['ansible_facts']['fqdn'] }}"
     owner: root
     group: root
@@ -28,7 +28,7 @@
 - name: Update /etc/hosts with the registration address
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    insertaafter: EOF
+    insertafter: EOF
     line: "{{ rke2_api_ip }} {{ rke2_api_fqdn }}"
     owner: root
     group: root
@@ -97,4 +97,4 @@
 
 - name: Complete airgapped prerequisites (if required)
   when: airgapped | bool
-  ansible.builtin.include_tasks: airgapped/00a_prerequisites_airgapped.yml
+  ansible.builtin.include_tasks: airgapped/00a_prerequisites.yml
