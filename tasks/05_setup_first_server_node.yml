@@ -30,29 +30,11 @@
     group: root
     mode: "0600"
 
-- name: Create custom kubelet config (if required)
-  when: rke2_cluster_custom_kubelet_config_required | bool
-  ansible.builtin.template:
-    src: templates/custom_config/kubelet-config.yaml.j2
-    dest: /etc/rancher/rke2/kubelet-config.yaml
-    owner: root
-    group: root
-    mode: "0600"
-
-- name: Create custom registry config (if required)
-  when: rke2_cluster_custom_registry_config_required | bool
-  ansible.builtin.template:
-    src: templates/custom_config/registries.yaml.j2
-    dest: /etc/rancher/rke2/registries.yaml
-    owner: root
-    group: root
-    mode: "0600"
-
 - name: Set proxy for RKE2 service in systemd (if required)
   when: proxy_required | bool
   ansible.builtin.template:
     src: "templates/proxy/rke2-{{ inventory_hostname['rke2_node_type'] }}.env.j2"
-    dest: "{{ systemd_folder }}/rke2-server.env"
+    dest: "{{ systemd_folder }}/rke2-{{ inventory_hostname['rke2_node_type'] }}.env"
     backup: true
     owner: root
     group: root
