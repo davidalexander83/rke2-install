@@ -17,11 +17,16 @@
 - name: Run RKE2 installation script
   ansible.builtin.command:
     cmd: "{{ work_dir }}/install.sh"
+    creates: "{{ systemd_folder }}/rke2-server.service"
   environment:
     INSTALL_RKE2_CHANNEL: "{{ cluster['channel'] | default('stable') }}"
     INSTALL_RKE2_TYPE: "{{ hostvars[inventory_hostname]['node_type'] }}"
     INSTALL_RKE2_VERSION: "{{ cluster['version'] }}"
   changed_when: true
+
+- name: Allow script to complete
+  ansible.builtin.wait_for:
+    path: "{{ systemd_folder }}/rke2-server.service"
 
 - name: Create custom manifests for implementation (if required)
   when: cluster['custom_manifests_required'] | bool
