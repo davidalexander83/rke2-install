@@ -47,7 +47,7 @@
   when: cluster['environment_options_required'] | bool
   ansible.builtin.template:
     src: "{{ item }}"
-    dest: "/etc/default/rke2-{{ hostvaras[inventory_hostname]['node_type'] }}"
+    dest: "/etc/default/rke2-{{ hostvars[inventory_hostname]['node_type'] }}"
     owner: root
     group: root
     mode: "0644"
