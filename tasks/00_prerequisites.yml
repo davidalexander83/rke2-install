@@ -19,7 +19,7 @@
   ansible.builtin.lineinfile:
     path: /etc/hosts
     insertafter: EOF
-    line: "{{ hostvars[item]['ansible_facts']['default_ipv4']['address'] }} {{ hostvars[item]['ansible_facts']['fqdn'] }}"
+    line: "{{ hostvars[item]['ansible_facts']['all_ipv4_addresses'][0] }} {{ hostvars[item]['ansible_facts']['fqdn'] }}"
     owner: root
     group: root
     mode: '0644'
