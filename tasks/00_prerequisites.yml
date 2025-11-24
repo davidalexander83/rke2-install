@@ -78,7 +78,7 @@
         dest: /tmp/helm-version.txt
         owner: root
         group: root
-        mode: '0644'
+        mode: '0777'
     - name: Set version for Helm download
       ansible.builtin.set_fact:
         helm_version: "{{ lookup('ansible.builtin.file', '/tmp/helm-version.txt') }}"
