@@ -70,8 +70,8 @@
   ansible.builtin.set_fact:
     keepalived_script_dir: "{{ (ansible_facts['os_family'] == 'RedHat') | ternary('/usr/libexec/keepalived', '/etc/keepalived') }}"
 
-- name: Install Helm
-  delegate_to: localhost
+- name: Prep for Helm install
+  run_once: true
   block:
     - name: Download latest version string file
       ansible.builtin.get_url:
@@ -79,10 +79,14 @@
         dest: /tmp/helm-version.txt
         owner: root
         group: root
-        mode: '0777'
+        mode: '0644'
+    - name: Get Helm version details
+      ansible.builtin.slurp:
+        src: /tmp/helm-version.txt
+      register: version
     - name: Set version for Helm download
       ansible.builtin.set_fact:
-        helm_version: "{{ lookup('ansible.builtin.file', '/tmp/helm-version.txt') }}"
+        helm_version: "{{ version['content'] | b64decode }}"
     - name: Remove version file as it is no longer needed
       ansible.builtin.file:
         path: /tmp/helm-version.txt
