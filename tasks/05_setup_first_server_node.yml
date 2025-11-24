@@ -33,7 +33,7 @@
 - name: Set proxy for RKE2 service in systemd (if required)
   when: proxy['required'] | bool
   ansible.builtin.template:
-    src: "templates/proxy/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env.j2"
+    src: "templates/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env.j2"
     dest: "{{ systemd_folder }}/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env"
     backup: true
     owner: root
