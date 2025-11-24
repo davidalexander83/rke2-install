@@ -23,6 +23,14 @@
     backup: true
   notify: Restart systemd-sysctl
 
+- name: Ensure config.yaml.d folder for RKE2 exists
+  ansible.builtin.file:
+    path: /etc/rancher/rke2/config.yaml.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Set CIS profile on RKE2 installation
   ansible.builtin.copy:
     content: 'profile: "cis"'
