@@ -81,12 +81,13 @@
         group: root
         mode: '0644'
     - name: Get Helm version details
-      ansible.builtin.slurp:
+      ansible.builtin.fetch:
         src: /tmp/helm-version.txt
-      register: version
+        dest: /tmp/helm-version.txt
+        flat: true
     - name: Set version for Helm download
       ansible.builtin.set_fact:
-        helm_version: "{{ version['content'] | b64decode }}"
+        helm_version: "{{ lookup('ansible.builtin.file', '/tmp/helm-version.txt') }}"
     - name: Remove version file as it is no longer needed
       ansible.builtin.file:
         path: /tmp/helm-version.txt
