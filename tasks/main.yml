@@ -5,7 +5,7 @@
   ansible.builtin.include_tasks: 00_prerequisites.yml
 
 - name: 01 - Configure local HA availability
-  when: cluster['type'] == 'ha'
+  when: cluster['type'] == 'ha' and hostvars[inventory_hostname]['node_type'] == 'server'
   ansible.builtin.include_tasks: 01_configure_local_ha.yml
 
 - name: 02 - Download and install RKE2 setup files
