@@ -18,9 +18,9 @@
     mode: "0755"
 
 - name: Set server taints if required
-  when: rke2_cluster_type == "ha"
+  when: cluster['type'] == "ha"
   ansible.builtin.set_fact:
-    rke2_server_node_taints: "{{ rke2_server_node_taints }}"
+    rke2_server_node_taints: "{{ cluster['server_node_taints'] }}"
 
 - name: Create RKE2 config.yaml
   ansible.builtin.template:
@@ -31,10 +31,10 @@
     mode: "0600"
 
 - name: Set proxy for RKE2 service in systemd (if required)
-  when: proxy_required | bool
+  when: proxy['required'] | bool
   ansible.builtin.template:
-    src: "templates/proxy/rke2-{{ inventory_hostname['rke2_node_type'] }}.env.j2"
-    dest: "{{ systemd_folder }}/rke2-{{ inventory_hostname['rke2_node_type'] }}.env"
+    src: "templates/proxy/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env.j2"
+    dest: "{{ systemd_folder }}/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env"
     backup: true
     owner: root
     group: root
@@ -82,3 +82,8 @@
   until: "' Ready ' in first_server_progress['stdout']"
   retries: 60
   delay: 15
+
+- name: Obtain value for token for second and subsequent node installs
+  when: cluster['type'] != single-node
+  ansible.builtin.set_fact:
+    token: "{{ lookup('ansible.builtin.file', '/var/lib/rancher/rke2/server/node-token' | split(':') | last }}"

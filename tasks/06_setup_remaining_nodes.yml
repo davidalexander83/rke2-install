@@ -9,104 +9,83 @@
 # The task set finishes by waiting for each node to be ready, and symlinking
 # the kubeconfig and kubectl files to /root and a bin path for ease of management.
 
-- name: Setup remaining servers
-  when: not rke2_node_first_server | bool
-  block:
-    - name: Create config directories for RKE2
-      ansible.builtin.file:
-        state: directory
-        path: /etc/rancher/rke2/config.yaml.d
-        owner: root
-        group: root
-        mode: "0755"
 
-    - name: Set server taints if required
-      when: rke2_cluster_type == "ha"
-      ansible.builtin.set_fact:
-        combined_node_taints: "{{ rke2_server_node_taints }}"
+- name: Create config directories for RKE2
+  ansible.builtin.file:
+    state: directory
+    path: /etc/rancher/rke2/config.yaml.d
+    owner: root
+    group: root
+    mode: "0755"
 
-    - name: Create RKE2 config.yaml
-      ansible.builtin.template:
-        src: templates/config.yaml.j2
-        dest: /etc/rancher/rke2/config.yaml
-        owner: root
-        group: root
-        mode: "0600"
+- name: Set server taints if required
+  when: rke2_cluster_type == "ha"
+  ansible.builtin.set_fact:
+    combined_node_taints: "{{ cluster['server_node_taints'] }}"
 
-    - name: Create custom kubelet config (if required)
-      when: rke2_cluster_custom_kubelet_config_required | bool
-      ansible.builtin.template:
-        src: templates/custom_config/kubelet-config.yaml.j2
-        dest: /etc/rancher/rke2/kubelet-config.yaml
-        owner: root
-        group: root
-        mode: "0600"
+- name: Create RKE2 config.yaml
+  ansible.builtin.template:
+    src: templates/config.yaml.j2
+    dest: /etc/rancher/rke2/config.yaml
+    owner: root
+    group: root
+    mode: "0600"
 
-    - name: Create custom registry config (if required)
-      when: rke2_cluster_custom_registry_config_required | bool
-      ansible.builtin.template:
-        src: templates/custom_config/registries.yaml.j2
-        dest: /etc/rancher/rke2/registries.yaml
-        owner: root
-        group: root
-        mode: "0600"
+- name: Set proxy for RKE2 service in systemd (if required)
+  when: proxy_required | bool
+  ansible.builtin.template:
+    src: "templates/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env.j2"
+    dest: "{{ systemd_folder }}/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env"
+    backup: true
+    owner: root
+    group: root
+    mode: "0644"
 
-    - name: Set proxy for RKE2 service in systemd (if required)
-      when: proxy_required | bool
-      ansible.builtin.template:
-        src: "templates/proxy/rke2-{{ inventory_hostname['rke2_node_type'] }}.env.j2"
-        dest: "{{ systemd_folder }}/rke2-server.env"
-        backup: true
-        owner: root
-        group: root
-        mode: "0644"
+- name: Mask non-relevant RKE2 service on each server
+  ansible.builtin.systemd:
+    name: "rke2-{{ item }}.service"
+    enabled: false
+    masked: true
+  loop:
+    - "{{ (['agent', 'server'] | reject('match', hostvars[inventory_hostname]['node_type']) | list) }}"
 
-    - name: Mask non-relevant RKE2 service on each server
-      ansible.builtin.systemd:
-        name: "rke2-{{ item }}.service"
-        enabled: false
-        masked: true
-      loop:
-        - "{{ (['agent', 'server'] | reject('match', rke2_node_type) | list) }}"
+- name: Start relevant rke2 service on each server
+  ansible.builtin.service:
+    name: "rke2-{{ inventory_hostname[hostvars]['node_type'] }}.service"
+    state: started
+    enabled: true
+  retries: 10
+  delay: 3
+  register: service_result
+  until: service_result is not failed
 
-    - name: Start relevant rke2 service on each server
-      ansible.builtin.service:
-        name: "rke2-{{ rke2_node_type }}.service"
-        state: started
-        enabled: true
-      retries: 10
-      delay: 3
-      register: service_result
-      until: service_result is not failed
+- name: Create .kube directory in root homedir
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
 
-    - name: Create .kube directory in root homedir
-      ansible.builtin.file:
-        path: /root/.kube
-        state: directory
-        owner: root
-        group: root
-        mode: "0700"
-
-    - name: Create symlinks for kubeconfig and kubectl
-      ansible.builtin.file:
-        path: "{{ item['path'] }}"
-        src: "{{ item['src'] }}"
-        state: link
-        owner: root
-        group: root
-      loop:
-        - path: /root/.kube/config
-          src: /etc/rancher/rke2/rke2.yaml
-        - path: "{{ bin_dir }}/kubectl"
-          src: /var/lib/rancher/rke2/bin/kubectl
+- name: Create symlinks for kubeconfig and kubectl
+  ansible.builtin.file:
+    path: "{{ item['path'] }}"
+    src: "{{ item['src'] }}"
+    state: link
+    owner: root
+    group: root
+  loop:
+    - path: /root/.kube/config
+      src: /etc/rancher/rke2/rke2.yaml
+    - path: "{{ bin_dir }}/kubectl"
+      src: /var/lib/rancher/rke2/bin/kubectl
 
 - name: Wait for all remaining nodes to be ready in the cluster
-  when: rke2_node_first_server | bool
   ansible.builtin.shell: "set -o pipefail {{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes | grep ' Ready' | wc -l"
   args:
     executable: /bin/bash
   changed_when: false
   register: all_servers_progress
-  until: "groups[rke2_cluster_name] | length == all_servers_progress['stdout'] | int"
+  until: "groups[cluster['name']] | length == all_servers_progress['stdout'] | int"
   retries: 100
   delay: 15

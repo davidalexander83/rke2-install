@@ -1,15 +1,12 @@
 ---
-- name: Create summary output
-  when: rke2_node_first_server | bool
-  block:
-    - name: Prepare summary
-      ansible.builtin.shell: set -o pipefail {{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes -o wide --show-labels
-      args:
-        executable: /bin/bash
-      changed_when: false
-      retries: 5
-      register: rke2_nodes_summary
+- name: Prepare summary
+  ansible.builtin.shell: set -o pipefail {{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes -o wide --show-labels
+  args:
+    executable: /bin/bash
+  changed_when: false
+  retries: 5
+  register: rke2_nodes_summary
 
-    - name: Display summary
-      ansible.builtin.debug:
-        var: rke2_nodes_summary['stdout_lines']
+- name: Display summary
+  ansible.builtin.debug:
+    var: rke2_nodes_summary['stdout_lines']

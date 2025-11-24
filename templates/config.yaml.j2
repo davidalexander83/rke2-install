@@ -1,12 +1,12 @@
-{% if not rke2_node_first_server %}
-server: https://{{ rke2_cluster_api_ip | ansible.utils.ipwrap }}:9345
-token: {{ rke2_cluster_token }}
+{% if not inventory_hostname == ansible_play_hosts_all[0] %}
+server: https://{{ cluster['api_ip'] | ansible.utils.ipwrap }}:9345
+token: {{ token }}
 {% endif %}
 tls-san:
-  - {{ rke2_api_fqdn }}
-cni: {{ rke2_cluster_cni }}
-cluster-cidr: "{{ rke2_cluster_pod_cidr }}"
-service-cidr: "{{ rke2_cluster_service_cidr }}"
-cluster-dns: "{{ rke2_cluster_dns }}"
-node-ip: "{{ rke2_node_ip }}"
-advertise-address: "{{ rke2_node_advertise_address }}"
+  - {{ cluster['api_fqdn'] }}
+cni: {{ cluster['cni'] }}
+cluster-cidr: {{ cluster['pod_cidr'] }}
+service-cidr: {{ cluster['service_cidr'] }}
+cluster-dns: {{ cluster['dns'] }}
+node-ip: {{ hostvars[inventory_hostname]['node_ip'] }}
+advertise-address: {{ hostvars[inventory_hostname]['node_ip'] }}
