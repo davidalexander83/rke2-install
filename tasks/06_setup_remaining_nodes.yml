@@ -19,7 +19,7 @@
     mode: "0755"
 
 - name: Set server taints if required
-  when: rke2_cluster_type == "ha"
+  when: cluster['type'] == "ha"
   ansible.builtin.set_fact:
     combined_node_taints: "{{ cluster['server_node_taints'] }}"
 
@@ -32,7 +32,7 @@
     mode: "0600"
 
 - name: Set proxy for RKE2 service in systemd (if required)
-  when: proxy_required | bool
+  when: proxy['required'] | bool
   ansible.builtin.template:
     src: "templates/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env.j2"
     dest: "{{ systemd_folder }}/rke2-{{ hostvars[inventory_hostname]['node_type'] }}.env"
