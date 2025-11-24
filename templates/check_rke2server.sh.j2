@@ -6,7 +6,7 @@ errorExit() {
 testUrl() {
     curl --silent --max-time 2 --insecure "$1" -o /dev/null || errorExit "Error GET $1"
 }
-testUrl https://localhost:9345/
+testUrl 'https://localhost:9345/'
 if ip addr | grep -wq '{{ cluster['api_ip'] }}'; then
     testUrl 'https://{{ cluster['api_ip'] | ansible.utils.ipwrap}}:9345/'
 fi

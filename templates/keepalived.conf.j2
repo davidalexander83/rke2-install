@@ -40,7 +40,7 @@ vrrp_instance VI_1 {
     priority {{ 150 - loop.index0 }}
     {% endif -%}
 {% endfor %}
-    advert_int 1
+advert_int 1
     unicast_src_ip {{ ansible_default_ipv4.address | default(ansible_default_ipv6.address) }}
     unicast_peer {
 {% for host in groups[cluster['servers_group']] %}
@@ -55,10 +55,10 @@ vrrp_instance VI_1 {
     }
 ### The following entry is the VRRP config for the incoming interface ###
 
-        virtual_ipaddress {
-            {{ cluster['api_ip'] }}
+    virtual_ipaddress {
+        {{ cluster['api_ip'] }}
     }
-        track_script {
+    track_script {
        chk_apiserver
        chk_rke2server
     }

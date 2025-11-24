@@ -34,22 +34,6 @@
     group: root
     mode: '0644'
 
-# This allows us to utilise a shorter variable name for proxy variables where required,
-# while maintaining a logical structure for the variable definition in the execution playbook.
-
-- name: Set proxy variables if a proxy is required
-  when: proxy['required'] | bool
-  block:
-    - name: Set http_proxy
-      ansible.builtin.set_fact:
-        http_proxy: "{{ proxy['http_proxy'] }}"
-    - name: Set https_proxy
-      ansible.builtin.set_fact:
-        https_proxy: "{{ proxy['https_proxy'] }}"
-    - name: Set no_proxy
-      ansible.builtin.set_fact:
-        no_proxy: "{{ proxy['no_proxy'] }}"
-
 # Red Hat distributions utilise /usr/lib/systemd/system/ for systemd variable injection; Debian
 # distributions such as Ubuntu utilise /usr/local/lib/systemd/system/. The systemd_folder variable
 # accounts for this and ensures that the correct location is used for injecting variables into the
