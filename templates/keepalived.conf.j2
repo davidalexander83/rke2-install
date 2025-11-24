@@ -35,7 +35,7 @@ vrrp_instance VI_1 {
 {% else %}
     state BACKUP
 {% endif %}
-{% for host in groups[rke2_servers_group_name] %}
+{% for host in groups[cluster['servers_group'] %}
     {%- if host|string() == inventory_hostname|string() %}
     priority {{ 150 - loop.index0 }}
     {% endif -%}
@@ -43,7 +43,7 @@ vrrp_instance VI_1 {
     advert_int 1
     unicast_src_ip {{ ansible_default_ipv4.address | default(ansible_default_ipv6.address) }}
     unicast_peer {
-{% for host in groups[rke2_servers_group_name] %}
+{% for host in groups[cluster['servers_group'] %}
 {% if host|string() != inventory_hostname|string() %}
         {{ hostvars[host]['ansible_default_ipv4']['address'] | default(hostvars[host]['ansible_default_ipv6']['address'] ) }}
 {% endif %}
@@ -56,7 +56,7 @@ vrrp_instance VI_1 {
 ### The following entry is the VRRP config for the incoming interface ###
 
         virtual_ipaddress {
-            {{ rke2_api_ip }}
+            {{ cluster['api_ip'] }}
     }
         track_script {
        chk_apiserver
