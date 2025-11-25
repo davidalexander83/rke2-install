@@ -79,6 +79,6 @@
       src: /var/lib/rancher/rke2/bin/kubectl
 
 - name: Obtain value for token for second and subsequent node installs
-  when: cluster['type'] != single-node
+  when: cluster['type'] != 'single-node'
   ansible.builtin.set_fact:
     token: "{{ lookup('ansible.builtin.file', '/var/lib/rancher/rke2/server/node-token') | split(':') | last }}"
