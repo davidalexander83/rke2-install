@@ -16,16 +16,17 @@
 
 # # 04_configure_any_additional_required_confs
 
-- name: 05 - Setup first server node
+- name: 04 - Setup first server node
   when: inventory_hostname == ansible_play_hosts_all[0]
-  ansible.builtin.include_tasks: 05_setup_first_server_node.yml
+  ansible.builtin.include_tasks: 04_setup_first_server_node.yml
 
-- name: 06 - Setup any remaining server nodes
-  when: inventory_hostname != ansible_play_hosts_all[0]
-  ansible.builtin.include_tasks: 06_setup_remaining_nodes.yml
+- name: 05 - Setup any remaining nodes
+  when: inventory_hostname != ansible_play_hosts_all[0] and cluster['type'] != 'single-node'
+  ansible.builtin.include_tasks: 05_setup_remaining_nodes.yml
 
-- name: 07 - Summary output for the cluster installation
-  ansible.builtin.include_tasks: 07_summary.yml
+- name: 06 - Summary output for the cluster installation
+  when: inventory_hostname == ansible_play_hosts_all[0]
+  ansible.builtin.include_tasks: 06_summary.yml
 
 
 # Airgapped
