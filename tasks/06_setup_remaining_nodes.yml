@@ -54,6 +54,7 @@
     enabled: true
 
 - name: Create .kube directory in root homedir
+  when: hostvars[inventory_hostname]['node_type'] == 'server'
   ansible.builtin.file:
     path: /root/.kube
     state: directory
@@ -61,25 +62,34 @@
     group: root
     mode: "0700"
 
-- name: Create symlinks for kubeconfig and kubectl
+- name: Create symlinks for kubeconfig
+  when: hostvars[inventory_hostname]['node_type'] == 'server'
   ansible.builtin.file:
-    path: "{{ item['path'] }}"
-    src: "{{ item['src'] }}"
+    path: /root/.kube/config
+    src: /etc/rancher/rke2/rke2.yaml
     state: link
     owner: root
     group: root
-  loop:
-    - path: /root/.kube/config
-      src: /etc/rancher/rke2/rke2.yaml
-    - path: "{{ bin_dir }}/kubectl"
-      src: /var/lib/rancher/rke2/bin/kubectl
+
+- name: Create symlinks for kubectl
+  ansible.builtin.file:
+    path: "{{ bin_dir }}/kubectl"
+    src: /var/lib/rancher/rke2/bin/kubectl
+    state: link
+    owner: root
+    group: root
+
+- name: Check
+  ansible.builtin.debug:
+    msg: "{{ ansible_play_hosts_all | length }}"
 
 - name: Wait for all remaining nodes to be ready in the cluster
-  ansible.builtin.shell: "set -o pipefail {{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes | grep ' Ready' | wc -l"
+  when: hostvars[inventory_hostname]['node_type'] == 'server'
+  ansible.builtin.shell: "{{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes | grep ' Ready' | wc -l"
   args:
     executable: /bin/bash
   changed_when: false
   register: all_servers_progress
-  until: "groups[cluster['name']] | length == all_servers_progress['stdout'] | int"
+  until: "ansible_play_hosts_all | length == all_servers_progress['stdout'] | int"
   retries: 100
   delay: 15
