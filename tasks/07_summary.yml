@@ -1,6 +1,6 @@
 ---
 - name: Prepare summary
-  ansible.builtin.shell: set -o pipefail {{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes -o wide --show-labels
+  ansible.builtin.shell: "{{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes -o wide --show-labels"
   args:
     executable: /bin/bash
   changed_when: false
