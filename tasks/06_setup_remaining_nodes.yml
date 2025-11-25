@@ -45,7 +45,7 @@
     enabled: false
     masked: true
   loop:
-    - "{{ (['agent', 'server'] | reject('match', hostvars[inventory_hostname]['node_type'])) }}"
+    - "{{ (['agent', 'server'] | reject('match', hostvars[inventory_hostname]['node_type'])) | first }}"
 
 - name: Start relevant rke2 service on each server
   ansible.builtin.service:
