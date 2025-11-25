@@ -49,13 +49,9 @@
 
 - name: Start relevant rke2 service on each server
   ansible.builtin.service:
-    name: "rke2-{{ inventory_hostname[hostvars]['node_type'] }}.service"
+    name: "rke2-{{ hostvars[inventory_hostname]['node_type'] }}.service"
     state: started
     enabled: true
-  retries: 10
-  delay: 3
-  register: service_result
-  until: service_result is not failed
 
 - name: Create .kube directory in root homedir
   ansible.builtin.file:
