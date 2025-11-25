@@ -86,8 +86,8 @@
 
 - name: Show value
   ansible.builtin.debug:
-    msg: "{{ node_token | b64decode | split(':') | last }}"
+    msg: "{{ node_token['content'] | b64decode | split(':') | last }}"
 
 - name: Set token fact
   ansible.builtin.set_fact:
-    token: "{{ node_token | b64decode | split(':') | last }}"
+    token: "{{ node_token['content'] | b64decode | split(':') | last }}"
