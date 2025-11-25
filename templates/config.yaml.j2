@@ -7,7 +7,7 @@ tls-san:
 cni: {{ cluster['cni'] }}
 {% if cluster['type'] == 'ha' and hostvars[inventory_hostname]['node_type'] == 'server' %}
 node-taint:
-{% for taint in clsuter['server_node_taints'] %}
+{% for taint in cluster['server_node_taints'] %}
   - {{ taint }}
 {% endfor %}
 {% endif %}
