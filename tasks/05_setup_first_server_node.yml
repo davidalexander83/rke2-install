@@ -83,11 +83,11 @@
   ansible.builtin.slurp:
     src: /var/lib/rancher/rke2/server/node-token
   register: node_token
-
+  
 - name: Show value
   ansible.builtin.debug:
-    msg: "{{ node_token['content'] | b64decode | split(':') | last }}"
+    msg: "{{ node_token['content'] | b64decode | split(':') | last | trim }}"
 
 - name: Set token fact
   ansible.builtin.set_fact:
-    token: "{{ node_token['content'] | b64decode | split(':') | last }}"
+    server_token: "{{ node_token['content'] | b64decode | split(':') | last | trim }}"

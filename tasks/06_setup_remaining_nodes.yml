@@ -9,6 +9,9 @@
 # The task set finishes by waiting for each node to be ready, and symlinking
 # the kubeconfig and kubectl files to /root and a bin path for ease of management.
 
+- name: Get token from the first server
+  ansible.builtin.set_fact:
+    token: "{{ hostvars[ansible_play_hosts_all[0]]['server_token'] }}"
 
 - name: Create config directories for RKE2
   ansible.builtin.file:
