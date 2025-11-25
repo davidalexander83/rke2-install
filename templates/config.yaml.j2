@@ -5,6 +5,12 @@ token: {{ token }}
 tls-san:
   - {{ cluster['api_fqdn'] }}
 cni: {{ cluster['cni'] }}
+{% if cluster['type'] == 'ha' and hostvars[inventory_hostname]['node_type'] == 'server' %}
+node-taint:
+{% for taint in clsuter['server_node_taints'] %}
+  - {{ taint }}
+{% endfor %}
+{% endif %}
 cluster-cidr: {{ cluster['pod_cidr'] }}
 service-cidr: {{ cluster['service_cidr'] }}
 cluster-dns: {{ cluster['dns'] }}

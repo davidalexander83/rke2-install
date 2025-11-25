@@ -17,11 +17,6 @@
     group: root
     mode: "0755"
 
-- name: Set server taints if required
-  when: cluster['type'] == "ha"
-  ansible.builtin.set_fact:
-    rke2_server_node_taints: "{{ cluster['server_node_taints'] }}"
-
 - name: Create RKE2 config.yaml
   ansible.builtin.template:
     src: templates/config.yaml.j2
