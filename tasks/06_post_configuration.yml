@@ -1,0 +1,44 @@
+---
+- name: Create privileged PodSecurity AdmissionConfiguration to override restricted CIS default
+  ansible.builtin.copy:
+    src: files/rke2-pss-privileged.yaml
+    dest: /etc/rancher/rke2/rke2-pss-privileged.yaml
+    owner: root
+    group: root
+    mode: '0644'
+  
+- name: Create configuration file to reference privileged PodSecurity AdmissionConfiguration
+  ansible.builtin.copy:
+    src: files/pod-security-admission-config-file.yaml
+    dest: /etc/rancher/rke2/config.yaml.d/pod-security-admission-config-file.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create basic audit policy for RKE2 to meet CIS hardening requirements
+  ansible.builtin.copy:
+    src: files/audit-policy.yaml
+    dest: /etc/rancher/rke2/audit-policy.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Set specific RKE2 file permissions to meet CIS hardening requirements
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: present
+    owner: root
+    group: root
+    mode: '0600'
+  loop:
+    - /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+    - /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+
+- name: Post-configuration for Calico CNI where installed
+  ansible.builtin.copy:
+    src: files/rke2-calico-config.yaml
+    dest: /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+    

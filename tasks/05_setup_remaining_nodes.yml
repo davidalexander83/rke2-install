@@ -79,10 +79,6 @@
     owner: root
     group: root
 
-- name: Check
-  ansible.builtin.debug:
-    msg: "{{ ansible_play_hosts_all | length }}"
-
 - name: Wait for all remaining nodes to be ready in the cluster
   when: hostvars[inventory_hostname]['node_type'] == 'server'
   ansible.builtin.shell: "{{ bin_dir }}/kubectl --kubeconfig /root/.kube/config get nodes | grep ' Ready' | wc -l"

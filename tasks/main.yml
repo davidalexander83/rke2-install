@@ -12,9 +12,8 @@
   ansible.builtin.include_tasks: 02_download_and_install_rke2.yml
 
 - name: 03 - Apply requirements for CIS hardening
+  when: hostvars[inventory_hostname]['node_type'] == 'server'
   ansible.builtin.include_tasks: 03_cis_hardening.yml
-
-# # 04_configure_any_additional_required_confs
 
 - name: 04 - Setup first server node
   when: inventory_hostname == ansible_play_hosts_all[0]
@@ -24,9 +23,13 @@
   when: inventory_hostname != ansible_play_hosts_all[0] and cluster['type'] != 'single-node'
   ansible.builtin.include_tasks: 05_setup_remaining_nodes.yml
 
-- name: 06 - Summary output for the cluster installation
+- name: 06 - Configure any configurations post-node setup
+  when: hostvars[inventory_hostname]['node_type'] == 'server'
+  ansible.builtin.include_tasks: 06_post_configuration.yml
+
+- name: 07 - Summary output for the cluster installation
   when: inventory_hostname == ansible_play_hosts_all[0]
-  ansible.builtin.include_tasks: 06_summary.yml
+  ansible.builtin.include_tasks: 07_summary.yml
 
 
 # Airgapped

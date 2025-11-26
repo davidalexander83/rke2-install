@@ -1,0 +1,12 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-calico
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    felixConfiguration:
+      # enable checksum offloading for performance as issue was for kernel versions <5.7
+      featureDetectOverride: "ChecksumOffloadBroken=false"
+      wireguardEnabled: true
